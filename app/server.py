@@ -611,6 +611,93 @@ def metadata(path: str) -> dict:
             "success": False,
             "message": str(e)
         }
+    
+@mcp.tool()
+def validate_path(path: str) -> dict:
+    """
+    Validate whether a path is safe and inside the workspace.
+    """
+
+    try:
+
+        resolved = safe_path(path)
+
+        return {
+            "success": True,
+            "valid": True,
+            "path": str(resolved.relative_to(WORKSPACE))
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "valid": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def workspace_info() -> dict:
+    """
+    Return information about the workspace.
+    """
+
+    total_files = sum(1 for p in WORKSPACE.rglob("*") if p.is_file())
+    total_directories = sum(1 for p in WORKSPACE.rglob("*") if p.is_dir())
+
+    return {
+        "success": True,
+        "workspace": str(WORKSPACE),
+        "total_files": total_files,
+        "total_directories": total_directories
+    }
+
+@mcp.tool()
+def file_exists(path: str) -> dict:
+    """
+    Check if a file exists.
+    """
+
+    try:
+
+        file_path = safe_path(path)
+
+        return {
+            "success": True,
+            "exists": file_path.exists(),
+            "is_file": file_path.is_file(),
+            "is_directory": file_path.is_dir()
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def directory_exists(path: str) -> dict:
+    """
+    Check if a directory exists.
+    """
+
+    try:
+
+        directory = safe_path(path)
+
+        return {
+            "success": True,
+            "exists": directory.exists(),
+            "is_directory": directory.is_dir()
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
 
 
 # ==========================================================
