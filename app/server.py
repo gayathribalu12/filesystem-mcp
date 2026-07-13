@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+import shutil
 
 from mcp.server.fastmcp import FastMCP
 
@@ -347,7 +348,152 @@ def delete_directory(path: str) -> dict:
             "message": str(e)
         }
     
+@mcp.tool()
+def delete_file(path: str) -> dict:
+    """
+    Delete a file from the workspace.
+    """
 
+    try:
+
+        file_path = safe_path(path)
+
+        if not file_path.exists():
+            return {
+                "success": False,
+                "message": "File does not exist."
+            }
+
+        if not file_path.is_file():
+            return {
+                "success": False,
+                "message": "Provided path is not a file."
+            }
+
+        file_path.unlink()
+
+        return {
+            "success": True,
+            "message": "File deleted successfully.",
+            "path": path
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def copy_file(source: str, destination: str) -> dict:
+    """
+    Copy a file inside the workspace.
+    """
+
+    try:
+
+        source_path = safe_path(source)
+        destination_path = safe_path(destination)
+
+        if not source_path.exists():
+            return {
+                "success": False,
+                "message": "Source file does not exist."
+            }
+
+        if not source_path.is_file():
+            return {
+                "success": False,
+                "message": "Source is not a file."
+            }
+
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy2(source_path, destination_path)
+
+        return {
+            "success": True,
+            "message": "File copied successfully.",
+            "source": source,
+            "destination": destination
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def move_file(source: str, destination: str) -> dict:
+    """
+    Move a file inside the workspace.
+    """
+
+    try:
+
+        source_path = safe_path(source)
+        destination_path = safe_path(destination)
+
+        if not source_path.exists():
+            return {
+                "success": False,
+                "message": "Source file does not exist."
+            }
+
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+        shutil.move(str(source_path), str(destination_path))
+
+        return {
+            "success": True,
+            "message": "File moved successfully.",
+            "source": source,
+            "destination": destination
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def rename_file(path: str, new_name: str) -> dict:
+    """
+    Rename a file.
+    """
+
+    try:
+
+        file_path = safe_path(path)
+
+        if not file_path.exists():
+            return {
+                "success": False,
+                "message": "File does not exist."
+            }
+
+        new_path = file_path.with_name(new_name)
+
+        file_path.rename(new_path)
+
+        return {
+            "success": True,
+            "message": "File renamed successfully.",
+            "old_path": path,
+            "new_path": str(new_path.relative_to(WORKSPACE))
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
 
 # ==========================================================
 # START SERVER
