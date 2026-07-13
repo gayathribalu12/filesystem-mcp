@@ -214,6 +214,139 @@ def read_file(path: str) -> dict:
             "success": False,
             "message": str(e)
         }
+    
+@mcp.tool()
+def write_file(path: str, content: str) -> dict:
+    """
+    Create or overwrite a UTF-8 text file inside the workspace.
+    """
+
+    try:
+
+        file_path = safe_path(path)
+
+        # Create parent folders if they don't exist
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        file_path.write_text(content, encoding="utf-8")
+
+        return {
+            "success": True,
+            "message": "File written successfully.",
+            "path": path,
+            "size": file_path.stat().st_size
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def append_file(path: str, content: str) -> dict:
+    """
+    Append text to an existing file.
+    """
+
+    try:
+
+        file_path = safe_path(path)
+
+        if not file_path.exists():
+            return {
+                "success": False,
+                "message": "File does not exist."
+            }
+
+        if not file_path.is_file():
+            return {
+                "success": False,
+                "message": "Provided path is not a file."
+            }
+
+        with open(file_path, "a", encoding="utf-8") as file:
+            file.write(content)
+
+        return {
+            "success": True,
+            "message": "Content appended successfully.",
+            "path": path,
+            "size": file_path.stat().st_size
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+@mcp.tool()
+def create_directory(path: str) -> dict:
+    """
+    Create a new directory inside the workspace.
+    """
+
+    try:
+        directory = safe_path(path)
+
+        directory.mkdir(parents=True, exist_ok=True)
+
+        return {
+            "success": True,
+            "message": "Directory created successfully.",
+            "path": path
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def delete_directory(path: str) -> dict:
+    """
+    Delete an empty directory.
+    """
+
+    try:
+        directory = safe_path(path)
+
+        if not directory.exists():
+            return {
+                "success": False,
+                "message": "Directory does not exist."
+            }
+
+        if not directory.is_dir():
+            return {
+                "success": False,
+                "message": "Provided path is not a directory."
+            }
+
+        directory.rmdir()
+
+        return {
+            "success": True,
+            "message": "Directory deleted successfully.",
+            "path": path
+        }
+
+    except OSError:
+        return {
+            "success": False,
+            "message": "Directory is not empty."
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
 
 
 # ==========================================================
