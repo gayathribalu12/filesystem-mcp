@@ -495,6 +495,124 @@ def rename_file(path: str, new_name: str) -> dict:
             "message": str(e)
         }
 
+@mcp.tool()
+def search_files(query: str) -> dict:
+    """
+    Search for files inside the workspace by name.
+    """
+
+    try:
+
+        matches = []
+
+        for file in WORKSPACE.rglob("*"):
+
+            if file.is_file() and query.lower() in file.name.lower():
+
+                matches.append(str(file.relative_to(WORKSPACE)))
+
+        return {
+            "success": True,
+            "query": query,
+            "matches": sorted(matches),
+            "count": len(matches)
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def tree(path: str = ".") -> dict:
+    """
+    Display the directory tree.
+    """
+
+    try:
+
+        root = safe_path(path)
+
+        if not root.exists():
+            return {
+                "success": False,
+                "message": "Path does not exist."
+            }
+
+        tree_output = []
+
+        def build_tree(folder, indent=""):
+
+            entries = sorted(folder.iterdir())
+
+            for index, entry in enumerate(entries):
+
+                connector = "└── " if index == len(entries) - 1 else "├── "
+
+                tree_output.append(
+                    indent + connector + entry.name
+                )
+
+                if entry.is_dir():
+
+                    extension = "    " if index == len(entries) - 1 else "│   "
+
+                    build_tree(entry, indent + extension)
+
+        tree_output.append(root.name)
+
+        build_tree(root)
+
+        return {
+            "success": True,
+            "tree": "\n".join(tree_output)
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    
+@mcp.tool()
+def metadata(path: str) -> dict:
+    """
+    Get metadata about a file or directory.
+    """
+
+    try:
+
+        item = safe_path(path)
+
+        if not item.exists():
+            return {
+                "success": False,
+                "message": "Path does not exist."
+            }
+
+        stat = item.stat()
+
+        return {
+            "success": True,
+            "name": item.name,
+            "path": str(item.relative_to(WORKSPACE)),
+            "type": "directory" if item.is_dir() else "file",
+            "size": stat.st_size,
+            "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+            "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
 # ==========================================================
 # START SERVER
 # ==========================================================
